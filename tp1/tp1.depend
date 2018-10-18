@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1539350579 source:c:\users\barcala\desktop\tp1\main.c
+	<stdio.h>
+	<stdlib.h>
+
+1539894385 source:c:\users\pampa\desktop\soyr\practicas\tp1\main.c
+	<stdio.h>
+	<stdlib.h>
+	<windows.h>
+
