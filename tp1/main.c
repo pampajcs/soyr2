@@ -13,52 +13,53 @@
 #include <windows.h>
 
 /*----VARIABLES----*/
-    struct boca{
-        char ip[16];
-        char subnet[16];
-        char mask[16];
-    };
+struct boca{
+    char ip[16];
+    char subnet[16];
+    char mask[16];
+};
 
-    struct boca bocaA;
-    struct boca bocaB;
-    struct boca bocaC;
-    struct boca bocaD;
-    char def_gateway[16];
+struct boca bocaA;
+struct boca bocaB;
+struct boca bocaC;
+struct boca bocaD;
+char def_gateway[16];
 
-    struct pack{
-        char ip_origen[16];
-        char ip_destino[16];
-        char boca_in[16];
-        char boca_out[16];
-        char default_gateway[3];
-    };
-    struct pack packA;
-    struct pack packB;
-    struct pack packC;
-    struct pack packD;
+struct pack{
+    char ip_origen[16];
+    char ip_destino[16];
+    char boca_in[16];
+    char boca_out[16];
+    char default_gateway[3];
+};
+
+struct pack packA;
+struct pack packB;
+struct pack packC;
+struct pack packD;
+
+FILE *config,*pack_bocaA,*pack_bocaB,*pack_bocaC,*pack_bocaD,*rechazados,*decisiones_qd,*decisiones_hexa;
 
 /*----FUNCIONES----*/
 int get_config(FILE * archivo);
-int ip_mask_verif(struct boca boca_n);
+int verificacion(struct boca boca_n);
 struct pack read_pack(FILE * pack_boca);
 
 /*----PROGRAMA----*/
-int main()
-{
-    FILE * archivo;
-    archivo = fopen("routerconfig.txt","r");
-    FILE * pack_bocaA;
+int main(){
+    config = fopen("routerconfig.txt","r");
     pack_bocaA = fopen("bocaA.txt","r");
-    FILE * pack_bocaB;
+    pack_bocaD = fopen("decisiones_qd.txt","r");
     pack_bocaB = fopen("bocaB.txt","r");
-    FILE * pack_bocaC;
     pack_bocaC = fopen("bocaC.txt","r");
-    FILE * pack_bocaD;
     pack_bocaD = fopen("bocaD.txt","r");
-    if( archivo == NULL ) {
-        printf("No se encontro el archivo.");
+    rechazados = fopen("rechazados.txt","rw");
+    decisiones_qd = fopen("decisiones_qd.txt","rw");
+    decisiones_hexa = fopen("decisiones_hexa.txt","rw");
+    if( config == NULL ) {
+        printf("No se encontro el archivo de configuracion");
     }
-    get_config(archivo);
+    get_config(config);
     packA = read_pack(pack_bocaA);
     packB = read_pack(pack_bocaB);
     packC = read_pack(pack_bocaC);
@@ -82,8 +83,7 @@ int get_config(FILE * file){
     fscanf(file,"%s",bocaD.mask);
     fscanf(file,"%s",def_gateway);
 
-
-   /* printf("%s\n",bocaA.ip);
+   /*printf("%s\n",bocaA.ip);
     printf("%s\n",bocaA.mask);
     printf("%s\n",bocaB.ip);inet_addr(bocaA.ip)
     printf("%s\n",bocaB.mask);
@@ -95,7 +95,7 @@ int get_config(FILE * file){
     return error;
 }
 
-int ip_mask_verif(struct boca boca_n){
+int verificacion(struct boca boca_n){
     //hacer comparacion de la salida de la and entre ip y mask con subred
     return 0;
 }
@@ -109,3 +109,4 @@ struct pack read_pack(FILE * pack_boca ){
     fscanf(pack_boca,"%s",salida.default_gateway);
     return salida;
 }
+
