@@ -43,11 +43,14 @@ FILE *config,*pack_bocaA,*pack_bocaB,*pack_bocaC,*pack_bocaD,*rechazados,*decisi
 
     unsigned long dir;
     char default_gateway[]="no";
+    int verif[4];
+    int i;
 
 /*----FUNCIONES----*/
 
 int get_config(FILE * archivo);
-int verificacion(struct boca boca_n);
+int verificacion(struct boca boca_n);/*verifica si el archivo de configuracion tiene errores o no, SI NO HAY ERROR ENTREGA 0 */
+void imp_error(verif);/* imprime los errores*/
 struct pack read_pack(FILE * pack_boca);
 void out(struct pack paquetes);
 unsigned long identif_boca(unsigned long ip_origen_);
@@ -67,6 +70,20 @@ int main(){
         printf("No se encontro el archivo de configuracion");
     }
     get_config(config);
+    
+    verif[0]=verificacion(bocaA); 
+    verif[1]=verificacion(bocaB);
+    verif[2]=verificacion(bocaC);
+    verif[3]=verificacion(bocaD);
+    printf("Boca A\n");
+    imp_error(verif[0]);
+    printf("Boca B\n");
+    imp_error(verif[1]);
+    printf("Boca C\n");
+    imp_error(verif[2]);
+    printf("Boca D\n");
+    imp_error(verif[3]); 
+    
     fprintf(decisiones_qd,"IP origen        IP destino      Boca IN     Boca OUT        DG\n");
     printf("boca A\n");
     while(packA.fin_archivo==0){
@@ -110,12 +127,75 @@ int get_config(FILE * file){
 }
 
 int verificacion(struct boca boca_n){
-    /*hacer comparacion de la salida de la and entre ip y mask con subred*/
 
+    unsigned long ipv;
+    unsigned long maskv;
+    unsigned long subnetv;
+    unsigned long red;
 
+    int a=0;
+    int b=0;
+    int c=0;
+    int d=0;
 
-    /*Lo hace Facu??*/
-    return 0;
+    if (strlen(boca_n.ip)<7){  //compruebo si hay el minimo de valores posibles (ejemplo = pongo 1.1.1 hay error falta un numero)
+        a=1;
+    }
+    ipv=inet_addr(boca_n.ip);// el valor lo convierte a un unsigned int en binario e invertido
+    if (ipv==0xffffffff){ //error si no corresponde a una ip , o puede ser si el valor es 255.255.255.255
+        if (strcmp(boca_n.ip,"255.255.255.255"))// si el valor es distinto a 255.255.255.255 que corresponde a ffffffff como tambien al error si el numero no es valido
+            a=1;
+    }
+
+    if (strlen(boca_n.mask)<7){
+        b=10;
+    }
+    maskv=inet_addr(boca_n.mask);
+    if (maskv==0xffffffff){
+        if (strcmp(boca_n.mask,"255.255.255.255"))
+            b=10;
+    }
+
+    if (strlen(boca_n.subnet)<7){
+        c=100;
+    }
+    subnetv=inet_addr(boca_n.subnet);
+    if (subnetv==0xffffffff){
+        if (strcmp(boca_n.subnet,"255.255.255.255"))
+            c=100;
+    }
+
+    if (a==0 && b==0 && c==0){
+        red=ntohl(ipv) & ntohl(maskv);
+        if (red!=ntohl(subnetv)){
+            d=1000;
+        }
+    }
+    return (a+b+c+d);
+}
+
+void imp_error(int validacion){
+    switch (validacion){
+        case 0:
+            printf("No hay error\n");
+            break;
+        case 1:
+            printf("Error Ip\n");
+            break;
+        case 10:
+            printf("Error Mascara\n");
+            break;
+        case 100:
+            printf("Error Subred\n");
+            break;
+        case 1000:
+            printf("Error la ip no pertenece a la Subred\n");
+            break;
+        default:
+            printf("Error, mas de un error de configuracion\n");
+            break;
+
+    }
 }
 
 struct pack read_pack(FILE * pack_boca ){           /*funcion que lee el archivo de paquetes*/
