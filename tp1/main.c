@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
+/*-----Defines-----*/
+
+    #define cpriv 0XEA000000 /*mascara para ver si ip es clase C "privada"*/
+    #define clasec 0XC0000000 /*ip provada clase c */
 
 /*----VARIABLES----*/
 
@@ -48,12 +52,12 @@ FILE *config,*pack_bocaA,*pack_bocaB,*pack_bocaC,*pack_bocaD,*rechazados,*decisi
 
 /*----FUNCIONES----*/
 
-int get_config(FILE * archivo);
-int verificacion(struct boca boca_n);/*verifica si el archivo de configuracion tiene errores o no, SI NO HAY ERROR ENTREGA 0 */
+int get_config(FILE * archivo); /*obntiene la configuracion del router */
+int verificacion(struct boca boca_n); /*verifica si el archivo de configuracion tiene errores o no, SI NO HAY ERROR ENTREGA 0 */
 void imp_error(verif);/* imprime los errores*/
-struct pack read_pack(FILE * pack_boca);
-void out(struct pack paquetes);
-unsigned long identif_boca(unsigned long ip_origen_);
+struct pack read_pack(FILE * pack_boca); /*lee los paquetes de cada boca*/
+void out(struct pack paquetes); /*escribe en el archivo de decisiones y los paquetes rechazados */
+unsigned long identif_boca(unsigned long ip_origen_); /* identifica la boca de entrada y de salida*/
 
 /*----PROGRAMA----*/
 
@@ -69,9 +73,10 @@ int main(){
     if( config == NULL ) {
         printf("No se encontro el archivo de configuracion");
     }
+
     get_config(config);
-    
-    verif[0]=verificacion(bocaA); 
+
+    verif[0]=verificacion(bocaA);
     verif[1]=verificacion(bocaB);
     verif[2]=verificacion(bocaC);
     verif[3]=verificacion(bocaD);
@@ -82,8 +87,8 @@ int main(){
     printf("Boca C\n");
     imp_error(verif[2]);
     printf("Boca D\n");
-    imp_error(verif[3]); 
-    
+    imp_error(verif[3]);
+
     fprintf(decisiones_qd,"IP origen        IP destino      Boca IN     Boca OUT        DG\n");
     printf("boca A\n");
     while(packA.fin_archivo==0){
@@ -230,8 +235,10 @@ void out(struct pack paquetes){             /*funcion que escribe en el archivo 
 }
 
 unsigned long identif_boca(unsigned long ip_origen_dest){       /*funcion que identifica la boca de ip de origen o destino*/
+
+
     unsigned long identif_boca_sal;
-    if(ip_origen_dest==ntohl(inet_addr(ip_privada))){
+    if((ip_origen_dest & cpriv)==clasec){
         identif_boca_sal=0;
         printf("salida = 0");
     }
