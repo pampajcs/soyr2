@@ -28,6 +28,8 @@ struct boca bocaA;
 struct boca bocaB;
 struct boca bocaC;
 struct boca bocaD;
+struct in_addr conv_ip1;
+struct in_addr conv_ip2;
 char def_gateway[16];
 char ip_privada[]="192.168.0.255";
 
@@ -88,27 +90,31 @@ int main(){
     imp_error(verif[2]);
     printf("Boca D\n");
     imp_error(verif[3]);
-
-    fprintf(decisiones_qd,"IP origen        IP destino      Boca IN     Boca OUT        DG\n");
-    printf("boca A\n");
-    while(packA.fin_archivo==0){
-        packA = read_pack(pack_bocaA);
-        out(packA);
+    if(verif[0]==0 && verif[1]==0 && verif[2]==0 && verif[3]==0){
+        fprintf(decisiones_qd,"IP origen        IP destino      Boca IN     Boca OUT        DG\n");
+        printf("boca A\n");
+        while(packA.fin_archivo==0){
+            packA = read_pack(pack_bocaA);
+            out(packA);
+        }
+        printf("boca B\n");
+        while(packB.fin_archivo==0){
+            packB = read_pack(pack_bocaB);
+            out(packB);
+        }
+        printf("boca C\n");
+        while(packC.fin_archivo==0){
+            packC = read_pack(pack_bocaC);
+            out(packC);
+        }
+        printf("boca D\n");
+        while(packD.fin_archivo==0){
+            packD = read_pack(pack_bocaD);
+            out(packD);
+        }
     }
-    printf("boca B\n");
-    while(packB.fin_archivo==0){
-        packB = read_pack(pack_bocaB);
-        out(packB);
-    }
-    printf("boca C\n");
-    while(packC.fin_archivo==0){
-        packC = read_pack(pack_bocaC);
-        out(packC);
-    }
-    printf("boca D\n");
-    while(packD.fin_archivo==0){
-        packD = read_pack(pack_bocaD);
-        out(packD);
+    else{
+        printf("\n\nEl programa se cerro a causa de errores\n\n");
     }
     return 0;
 }
@@ -222,25 +228,29 @@ void out(struct pack paquetes){             /*funcion que escribe en el archivo 
         unsigned long ip_des=ntohl(inet_addr(paquetes.ip_destino));
         unsigned long boca_en=identif_boca(ip_or);
         unsigned long boca_sal=identif_boca(ip_des);
+        conv_ip1.s_addr=ntohl(boca_en);
+        conv_ip2.s_addr=ntohl(boca_sal);
+        char aux_ip1[16];
+        char aux_ip2[16];
+        strcpy(aux_ip1,inet_ntoa(conv_ip1));
+        strcpy(aux_ip2,inet_ntoa(conv_ip2));
         if(boca_en == 0 || boca_sal==0){
             printf("rechazado\n");
             fprintf(rechazados,"%X %X %s %s\n",ip_or,ip_des,paquetes.ip_origen,paquetes.ip_destino);
         }
         else{
             printf("%X  %X  %X  %X  %s\n", ip_or,ip_des,boca_en, boca_sal,default_gateway);
-            fprintf(decisiones_hexa,"%X %X  %X      %X      %s\n", ip_or,ip_des,boca_en, boca_sal,default_gateway);
-            fprintf(decisiones_qd,"%s   %s    %X    %X     %s\n", paquetes.ip_origen,paquetes.ip_destino,boca_en, boca_sal,default_gateway);
+            fprintf(decisiones_hexa,"%X %X %X %X %s\n", ip_or,ip_des,boca_en, boca_sal,default_gateway);
+            fprintf(decisiones_qd,"%s %s %s %s %s\n", paquetes.ip_origen,paquetes.ip_destino,aux_ip1,aux_ip2,default_gateway);
         }
     }
 }
 
 unsigned long identif_boca(unsigned long ip_origen_dest){       /*funcion que identifica la boca de ip de origen o destino*/
-
-
     unsigned long identif_boca_sal;
     if((ip_origen_dest & cpriv)==clasec){
         identif_boca_sal=0;
-        printf("salida = 0");
+        //printf("salida = 0");
     }
     else{
         if((ip_origen_dest & ntohl(inet_addr(bocaA.mask))) == ntohl(inet_addr(bocaA.subnet))){
