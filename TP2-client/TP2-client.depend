@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1541167559 source:c:\users\barcala\desktop\tp2-client\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+
